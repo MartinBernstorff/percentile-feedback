@@ -1,4 +1,5 @@
-.DS_Store
-data.js
-periods.txt
-local.pfserver.plist
+*credentials*
+*token*
+*.pyc
+__pycache__
+*test*
