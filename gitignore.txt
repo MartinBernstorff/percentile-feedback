@@ -1,0 +1,5 @@
+*credentials*
+*token*
+*.pyc
+__pycache__
+*test*
