@@ -12,6 +12,7 @@ from pprint import pprint
 import urllib
 
 import subprocess
+import threading
 
 # Basic setup
 
@@ -22,12 +23,12 @@ toggl.setAPIKey(TOGGL_TOKEN)
 offset = int(0)
 
 #Generate today-string
-index = dt.today() + datetime.timedelta(-100)
+index = dt.today() + datetime.timedelta(-200)
 index_midnight = index.replace(hour=0, minute=1)
 index_formatted = index_midnight.isoformat() + 'Z'
 index_str = dt.strftime(index,'%Y-%m-%d')
 
-day_after_index = index + datetime.timedelta(101)
+day_after_index = index + datetime.timedelta(201)
 day_after_index_midnight = day_after_index.replace(hour=0, minute=1)
 day_after_index_formatted = day_after_index_midnight.isoformat() + 'Z'
 
@@ -37,11 +38,12 @@ day_after_index_formatted = day_after_index_midnight.isoformat() + 'Z'
 start_date_encoded = urllib.parse.quote(index_formatted)
 end_date_encoded = urllib.parse.quote(day_after_index_formatted)
 
-while True:
+def gen_percentile_entries():
     entries = toggl.request("https://www.toggl.com/api/v8/time_entries" + "?start_date=" + start_date_encoded + "&end_date=" + end_date_encoded)
 
     with open('percentile-feedback/periods.txt', 'w') as periods:
         for entry in entries:
+            # pprint(entry)
             date = entry["start"][0:10]
             hour = int(entry["start"][11:13]) + 2
             minute = int(entry["start"][14:16])
@@ -52,20 +54,69 @@ while True:
             else:
                 duration = int(entry["duration"])
 
-            start_seconds = hour * 3600 + minute * 60 + second
-            end_seconds = start_seconds + duration
+            if "tags" in entry:
+                if entry["tags"][0] == "2/3":
+                    i = duration / (60*3)
+                    i2 = 0
+                    print(round(i))
 
-            period_string = date + " " + str(start_seconds) + " " + str(end_seconds)
-            print(period_string)
+                    start_seconds = hour * 3600 + minute * 60 + second
 
-            periods.write(period_string + "\n")
+                    while i2 < i:
+                        print(i2)
+
+                        end_seconds = start_seconds + 60*2
+                        i2 = i2+1
+
+                        period_string = date + " " + str(start_seconds) + " " + str(end_seconds)
+                        print(period_string)
+
+                        periods.write(period_string + "\n")
+
+                        start_seconds = start_seconds + 60*3
+                elif entry["tags"][0] == "1/3":
+                    i = duration / (60*3)
+                    i2 = 0
+                    print(round(i))
+
+                    start_seconds = hour * 3600 + minute * 60 + second
+
+                    while i2 < i:
+                        print(i2)
+
+                        end_seconds = start_seconds + 60*1
+                        i2 = i2+1
+
+                        period_string = date + " " + str(start_seconds) + " " + str(end_seconds)
+                        print(period_string)
+
+                        periods.write(period_string + "\n")
+
+                        start_seconds = start_seconds + 60*3
+            else:
+                start_seconds = hour * 3600 + minute * 60 + second
+                end_seconds = start_seconds + duration
+
+                period_string = date + " " + str(start_seconds) + " " + str(end_seconds)
+                print(period_string)
+
+                periods.write(period_string + "\n")
 
     python2_command = "python percentile-feedback/data.py --convert-log percentile-feedback/periods.txt"
 
     process = subprocess.Popen(python2_command.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
 
-    if sys.argv[1] is not "1":
-        break
+def spawn_process(function):
+    """
+        Spawns a new process.
+        Takes 2 args:
+            function to run
+            args [tuple]
+    """
+    threading.Thread(target=function).start()
+
+while True:
+    spawn_process(gen_percentile_entries)
 
     time.sleep(10)
