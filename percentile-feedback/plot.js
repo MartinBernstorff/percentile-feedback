@@ -175,6 +175,7 @@
     y = 100 * histogram[day][bucket] / ((1 + bucket) * interval);
     if (jitter) {
       x += 0 * (Math.random() - 0.5);
+      y += 0 * (Math.random() - 0.5);
     }
     if (x < 0) {
       x = 0 - x;

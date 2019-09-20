@@ -93,6 +93,25 @@ def gen_percentile_entries():
                         periods.write(period_string + "\n")
 
                         start_seconds = start_seconds + 60*3
+            elif int(entry["duration"]) > 3000:
+                i = duration / (60*4)
+                i2 = 0
+                print(round(i))
+
+                start_seconds = hour * 3600 + minute * 60 + second
+
+                while i2 < i:
+                    print(i2)
+
+                    end_seconds = round(start_seconds + 60*3)
+                    i2 = i2+1
+
+                    period_string = date + " " + str(start_seconds) + " " + str(end_seconds)
+                    print(period_string)
+
+                    periods.write(period_string + "\n")
+
+                    start_seconds = start_seconds + 60*4
             else:
                 start_seconds = hour * 3600 + minute * 60 + second
                 end_seconds = start_seconds + duration

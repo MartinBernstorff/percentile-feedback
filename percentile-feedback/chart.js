@@ -29,7 +29,7 @@
     yValue = function(d) {
       return d[1];
     };
-    yScale = d3.scale.linear().domain([0, 100]).range([height, 0]);
+    yScale = d3.scale.linear().domain([0, 75]).range([height, 0]);
     yMap = function(d) {
       return yScale(yValue(d));
     };
